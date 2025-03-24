@@ -1,0 +1,60 @@
+{
+  "fileTypes": ["py"],
+  "patterns": [
+    {
+      "id": "bare-except",
+      "regex": "except:\\s*",
+      "message": "Using bare except clause, which might catch unexpected exceptions",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "except:",
+        "replace": "except Exception:"
+      }
+    },
+    {
+      "id": "print-without-parentheses",
+      "regex": "\\bprint\\s+[^(]",
+      "message": "Using Python 2 style print statement, not a function call",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "print\\s+([^\\n]+)",
+        "replace": "print($1)"
+      }
+    },
+    {
+      "id": "mutable-default-args",
+      "regex": "def\\s+[a-zA-Z0-9_]+\\s*\\([^)]*=[\\s]*\\[[^]]*\\][^)]*\\)",
+      "message": "Using mutable default argument, which can lead to unexpected behavior",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "def\\s+([a-zA-Z0-9_]+)\\s*\\(([^)]*)=([\\s]*\\[[^]]*\\])([^)]*)\\)",
+        "replace": "def $1($2=None$4):\n    if $2 is None:\n        $2 = $3"
+      }
+    },
+    {
+      "id": "unused-import",
+      "regex": "^\\s*import\\s+([a-zA-Z0-9_]+)(?!.*?\\1\\s*(?:\\.|\\s))",
+      "message": "Importing module that is not used in the file",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "^(\\s*)import\\s+([a-zA-Z0-9_]+)(?![^#].*?\\2)",
+        "replace": "$1# Unused: import $2"
+      }
+    },
+    {
+      "id": "string-concat-in-loop",
+      "regex": "for\\s+[^:]+:[^\\n]*\\n+[^\\n]*\\s+[a-zA-Z0-9_]+\\s*\\+=\\s*['\"][^'\"]*['\"]\\s*",
+      "message": "Inefficient string concatenation in a loop",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "([a-zA-Z0-9_]+)\\s*=\\s*['\"][^'\"]*['\"]\\s*\\nfor\\s+([^:]+):[^\\n]*\\n+[^\\n]*\\s+\\1\\s*\\+=\\s*['\"][^'\"]*['\"]\\s*",
+        "replace": "parts = []\nfor $2:\n    parts.append(\"...\")\n$1 = ''.join(parts)"
+      }
+    }
+  ]
+}
