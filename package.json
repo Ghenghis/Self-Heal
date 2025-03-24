@@ -1,0 +1,39 @@
+{
+  "name": "project-healer",
+  "version": "1.0.0",
+  "description": "AI-powered self-healing framework for GitHub projects",
+  "main": "src/index.js",
+  "bin": {
+    "project-healer": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "scan": "node src/index.js scan",
+    "heal": "node src/index.js heal",
+    "learn": "node src/index.js learn",
+    "test": "jest"
+  },
+  "keywords": [
+    "github",
+    "self-healing",
+    "ai",
+    "automation",
+    "claude"
+  ],
+  "author": "Ghenghis",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "glob": "^10.3.4"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ghenghis/Self-Heal"
+  }
+}
