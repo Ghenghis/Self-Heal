@@ -1,0 +1,165 @@
+{
+  "id": "dependency-patterns",
+  "version": "1.0.0",
+  "description": "Common patterns for detecting and fixing dependency issues",
+  "patterns": [
+    {
+      "id": "npm-outdated-dependency",
+      "name": "Outdated NPM dependency",
+      "description": "Detects outdated NPM dependencies that should be updated",
+      "severity": "medium",
+      "fileTypes": ["json"],
+      "target": "package.json",
+      "pattern": "\"([-\\w@/]+)\":\\s*\"\\^?([0-9]+\\.[0-9]+\\.[0-9]+)\"",
+      "metadata": {
+        "type": "outdated-dependency",
+        "manager": "npm"
+      },
+      "fix": {
+        "type": "command",
+        "template": "npm install {{name}}@latest --save"
+      }
+    },
+    {
+      "id": "yarn-outdated-dependency",
+      "name": "Outdated Yarn dependency",
+      "description": "Detects outdated Yarn dependencies that should be updated",
+      "severity": "medium",
+      "fileTypes": ["json"],
+      "target": "package.json",
+      "pattern": "\"([-\\w@/]+)\":\\s*\"\\^?([0-9]+\\.[0-9]+\\.[0-9]+)\"",
+      "metadata": {
+        "type": "outdated-dependency",
+        "manager": "yarn"
+      },
+      "fix": {
+        "type": "command",
+        "template": "yarn upgrade {{name}} --latest"
+      }
+    },
+    {
+      "id": "npm-vulnerable-dependency",
+      "name": "Vulnerable NPM dependency",
+      "description": "Detects known vulnerable NPM dependencies",
+      "severity": "high",
+      "fileTypes": ["json"],
+      "target": "package.json",
+      "vulnerabilities": [
+        {
+          "name": "lodash",
+          "vulnerableVersions": ["<4.17.21"],
+          "fixedVersion": "4.17.21",
+          "cve": "CVE-2021-23337"
+        },
+        {
+          "name": "axios",
+          "vulnerableVersions": ["<0.21.1"],
+          "fixedVersion": "1.6.0",
+          "cve": "CVE-2023-45857"
+        },
+        {
+          "name": "sanitize-html",
+          "vulnerableVersions": ["<2.3.1"],
+          "fixedVersion": "2.11.0",
+          "cve": "CVE-2021-26539"
+        }
+      ],
+      "metadata": {
+        "type": "vulnerable-dependency",
+        "manager": "npm"
+      },
+      "fix": {
+        "type": "command",
+        "template": "npm install {{name}}@{{fixedVersion}} --save"
+      }
+    },
+    {
+      "id": "python-vulnerable-dependency",
+      "name": "Vulnerable Python dependency",
+      "description": "Detects known vulnerable Python dependencies",
+      "severity": "high",
+      "fileTypes": ["txt"],
+      "target": "requirements.txt",
+      "pattern": "([-\\w]+)==([0-9]+\\.[0-9]+\\.[0-9]+)",
+      "vulnerabilities": [
+        {
+          "name": "django",
+          "vulnerableVersions": ["<3.2.0"],
+          "fixedVersion": "3.2.0",
+          "cve": "CVE-2021-33203"
+        },
+        {
+          "name": "flask",
+          "vulnerableVersions": ["<2.0.0"],
+          "fixedVersion": "2.3.3",
+          "cve": "CVE-2023-30861"
+        },
+        {
+          "name": "requests",
+          "vulnerableVersions": ["<2.26.0"],
+          "fixedVersion": "2.31.0",
+          "cve": "CVE-2023-32681"
+        }
+      ],
+      "metadata": {
+        "type": "vulnerable-dependency",
+        "manager": "pip"
+      },
+      "fix": {
+        "type": "replace-in-file",
+        "template": "{{name}}>={{fixedVersion}}"
+      }
+    },
+    {
+      "id": "npm-missing-dependency",
+      "name": "Missing NPM dependency",
+      "description": "Detects imports of packages not listed in package.json",
+      "severity": "medium",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "pattern": "(?:import\\s+.*?from\\s+['\"]([^./][^'\"]+)['\"]|require\\s*\\(\\s*['\"]([^./][^'\"]+)['\"]\\s*\\))",
+      "metadata": {
+        "type": "missing-dependency",
+        "manager": "npm"
+      },
+      "fix": {
+        "type": "command",
+        "template": "npm install {{name}} --save"
+      }
+    },
+    {
+      "id": "pip-missing-dependency",
+      "name": "Missing Python dependency",
+      "description": "Detects imports of packages not listed in requirements.txt",
+      "severity": "medium",
+      "fileTypes": ["py"],
+      "pattern": "(?:^|\\s)import\\s+([\\w.]+)(?:\\s+as\\s+[\\w.]+)?|from\\s+([\\w.]+)\\s+import",
+      "metadata": {
+        "type": "missing-dependency",
+        "manager": "pip"
+      },
+      "fix": {
+        "type": "append-to-file",
+        "target": "requirements.txt",
+        "template": "{{name}}"
+      }
+    },
+    {
+      "id": "maven-outdated-dependency",
+      "name": "Outdated Maven dependency",
+      "description": "Detects outdated Maven dependencies",
+      "severity": "medium",
+      "fileTypes": ["xml"],
+      "target": "pom.xml",
+      "pattern": "<dependency>[\\s\\S]*?<groupId>([^<]+)</groupId>[\\s\\S]*?<artifactId>([^<]+)</artifactId>[\\s\\S]*?<version>([^<]+)</version>[\\s\\S]*?</dependency>",
+      "metadata": {
+        "type": "outdated-dependency",
+        "manager": "maven"
+      },
+      "fix": {
+        "type": "replace-in-file",
+        "findTemplate": "<version>{{version}}</version>",
+        "replaceTemplate": "<version>{{newVersion}}</version>"
+      }
+    }
+  ]
+}
