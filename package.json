@@ -11,6 +11,8 @@
     "scan": "node src/index.js scan",
     "security": "node src/index.js security-scan",
     "heal": "node src/index.js heal --all",
+    "analyze-deps": "node src/index.js analyze-deps",
+    "heal-deps": "node src/index.js heal-deps",
     "learn": "node src/index.js learn",
     "test": "jest"
   },
@@ -20,7 +22,8 @@
     "self-healing",
     "security",
     "code-quality",
-    "vulnerability-scanning"
+    "vulnerability-scanning",
+    "dependency-management"
   ],
   "author": "Self-Heal Project Team",
   "license": "MIT",
@@ -28,6 +31,7 @@
     "axios": "^1.6.0",
     "commander": "^11.0.0",
     "dompurify": "^3.0.6",
+    "dotenv": "^16.3.1",
     "eslint": "^8.51.0",
     "glob": "^10.3.10",
     "js-yaml": "^4.1.0",
@@ -36,6 +40,7 @@
     "node-fetch": "^3.3.2",
     "sanitize-html": "^2.11.0",
     "semver": "^7.5.4",
+    "xml2js": "^0.6.2",
     "xmldom": "^0.6.0"
   },
   "devDependencies": {
