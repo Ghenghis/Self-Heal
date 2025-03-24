@@ -1,0 +1,60 @@
+{
+  "fileTypes": ["css", "scss", "less"],
+  "patterns": [
+    {
+      "id": "important-flag",
+      "regex": "!important",
+      "message": "Using !important in CSS, which might indicate a specificity issue",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "!important",
+        "replace": "/* Avoid using !important */"
+      }
+    },
+    {
+      "id": "pixel-font-size",
+      "regex": "font-size:\\s*[0-9]+(px)",
+      "message": "Using px for font sizes instead of relative units like rem or em",
+      "severity": "low",
+      "fix": {
+        "type": "replace",
+        "find": "font-size:\\s*([0-9]+)px",
+        "replace": "font-size: calc($1 / 16)rem"
+      }
+    },
+    {
+      "id": "duplicate-selectors",
+      "regex": "([a-zA-Z0-9_.-]+(?:\\s*[>.+~]\\s*[a-zA-Z0-9_.-]+)*)\\s*\\{[^\\}]*\\}\\s*\\1\\s*\\{",
+      "message": "Duplicate CSS selector found",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "(\\s*)([a-zA-Z0-9_.-]+(?:\\s*[>.+~]\\s*[a-zA-Z0-9_.-]+)*)\\s*\\{[^\\}]*\\}(\\s*)\\2\\s*\\{",
+        "replace": "$1$2 {$3"
+      }
+    },
+    {
+      "id": "old-flexbox",
+      "regex": "display:\\s*(-webkit-|\\s*-moz-|\\s*-ms-)?box\\s*;",
+      "message": "Using old flexbox syntax instead of the modern flex",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "display:\\s*(?:-webkit-|\\s*-moz-|\\s*-ms-)?box\\s*;",
+        "replace": "display: flex;"
+      }
+    },
+    {
+      "id": "missing-vendor-prefixes",
+      "regex": "(transform|transition|animation|user-select|box-sizing):\\s*[^;]+;",
+      "message": "Missing vendor prefixes for cross-browser compatibility",
+      "severity": "low",
+      "fix": {
+        "type": "replace",
+        "find": "(transform|transition|animation|user-select|box-sizing)(:\\s*)([^;]+;)",
+        "replace": "-webkit-$1$2$3\n  -moz-$1$2$3\n  -ms-$1$2$3\n  $1$2$3"
+      }
+    }
+  ]
+}
