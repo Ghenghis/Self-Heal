@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const dependencyAnalyzer = require('./dependencyAnalyzer');
 
 class Healer {
   constructor(projectPath, ai) {
@@ -18,8 +19,20 @@ class Healer {
       unfixed: []
     };
 
-    // Group issues by file
-    const issuesByFile = this.groupIssuesByFile(issues);
+    // Group issues by type to handle differently
+    const codeIssues = issues.filter(issue => !issue.isDependencyIssue);
+    const dependencyIssues = issues.filter(issue => issue.isDependencyIssue);
+
+    // First fix dependency issues
+    if (dependencyIssues.length > 0) {
+      console.log(`Processing ${dependencyIssues.length} dependency issues...`);
+      const depResults = await this.fixDependencyIssues(dependencyIssues);
+      results.fixed.push(...depResults.fixed);
+      results.unfixed.push(...depResults.unfixed);
+    }
+
+    // Group code issues by file
+    const issuesByFile = this.groupIssuesByFile(codeIssues);
     
     // Process files in reverse order of issues
     // This ensures we fix files with more issues first
@@ -121,6 +134,48 @@ class Healer {
   }
 
   /**
+   * Fix dependency issues using dependency analyzer
+   * @param {Array} issues - Dependency issues to fix
+   * @returns {Object} - Results of fixing dependency issues
+   */
+  async fixDependencyIssues(issues) {
+    const results = {
+      fixed: [],
+      unfixed: []
+    };
+
+    // Use dependency analyzer to apply fixes
+    try {
+      const fixResults = await dependencyAnalyzer.applyFixes(issues, this.projectPath);
+      
+      for (const result of fixResults) {
+        if (result.success) {
+          results.fixed.push({
+            ...result.issue,
+            fixApplied: result.message
+          });
+        } else {
+          results.unfixed.push({
+            ...result.issue,
+            reason: result.message
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fixing dependency issues:', error.message);
+      // If there's an error in the general process, mark all issues as unfixed
+      for (const issue of issues) {
+        results.unfixed.push({
+          ...issue,
+          reason: `Error in dependency fixing process: ${error.message}`
+        });
+      }
+    }
+
+    return results;
+  }
+
+  /**
    * Group issues by file
    * @param {Array} issues - List of issues
    * @returns {Object} - Issues grouped by file
@@ -165,6 +220,29 @@ class Healer {
     }
     
     return content;
+  }
+
+  /**
+   * Analyze project for issues including code and dependencies
+   * @returns {Array} - All detected issues
+   */
+  async analyzeProject() {
+    // Combine code issues from the scanner
+    // with dependency issues from the dependency analyzer
+    
+    // This assumes scanner.scanProject returns code issues
+    const codeIssues = await this.scanner.scanProject(this.projectPath);
+    
+    // Get dependency issues
+    console.log('Analyzing project dependencies...');
+    const dependencyIssues = await dependencyAnalyzer.analyzeDependencies(this.projectPath);
+    
+    // Mark dependency issues
+    for (const issue of dependencyIssues) {
+      issue.isDependencyIssue = true;
+    }
+    
+    return [...codeIssues, ...dependencyIssues];
   }
 }
 
