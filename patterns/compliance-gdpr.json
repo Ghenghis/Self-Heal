@@ -1,0 +1,104 @@
+{
+  "fileTypes": ["js", "jsx", "ts", "tsx", "py", "php", "rb", "java", "cs"],
+  "patterns": [
+    {
+      "id": "pii-email-storage",
+      "regex": "(email|e-mail|mail).*?(=|:).*?['\"][^'\"]*?['\"]",
+      "message": "Potential PII (email) stored without encryption",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(email|e-mail|mail)(.*?)(=|:)(.*?)(['\"])([^'\"]*?)(['\"])",
+        "replace": "$1$2$3$4$5encryptData($6)$7"
+      }
+    },
+    {
+      "id": "pii-phone-storage",
+      "regex": "(phone|mobile|cell|telephone).*?(=|:).*?['\"][0-9+\\-\\s\\(\\)]{7,}['\"]",
+      "message": "Potential PII (phone number) stored without encryption",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(phone|mobile|cell|telephone)(.*?)(=|:)(.*?)(['\"])([^'\"]*?)(['\"])",
+        "replace": "$1$2$3$4$5encryptData($6)$7"
+      }
+    },
+    {
+      "id": "pii-address-storage",
+      "regex": "(address|street|city|state|zip|postal).*?(=|:).*?['\"][^'\"]{10,}['\"]",
+      "message": "Potential PII (address) stored without encryption",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(address|street|city|state|zip|postal)(.*?)(=|:)(.*?)(['\"])([^'\"]*?)(['\"])",
+        "replace": "$1$2$3$4$5encryptData($6)$7"
+      }
+    },
+    {
+      "id": "missing-consent",
+      "regex": "(collect|gather|store|save).*?(data|information|email|profile).*?(?!consent)",
+      "message": "Data collection without explicit consent check",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(collect|gather|store|save)(.*?)(data|information|email|profile)(.*?\\{)",
+        "replace": "$1$2$3$4\n  // GDPR Compliance: Check for user consent\n  if (!hasUserConsent()) {\n    return handleMissingConsent();\n  }\n"
+      }
+    },
+    {
+      "id": "missing-data-retention",
+      "regex": "(store|save|insert).*?(data|information|profile).*?(?!retention|expiry|ttl)",
+      "message": "No data retention/expiry policy found",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "(store|save|insert)(.*?)(data|information|profile)(.*?\\{)",
+        "replace": "$1$2$3$4\n  // GDPR Compliance: Set data retention period\n  setRetentionPeriod(data, '30days');\n"
+      }
+    },
+    {
+      "id": "missing-right-to-forget",
+      "regex": "(user|account|profile).*?(class|interface|type|struct|object).*?(?!delete|remove|erase)",
+      "message": "User data model without right-to-forget functionality",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(user|account|profile)(.*?)(class|interface|type|struct|object)(.*?\\{)",
+        "replace": "$1$2$3$4\n  // GDPR Compliance: Add right-to-forget method\n  deleteUserData(userId) {\n    // Implement complete data removal\n    return this.removeAllUserData(userId);\n  }\n"
+      }
+    },
+    {
+      "id": "third-party-data-sharing",
+      "regex": "(send|transmit|share).*?(data|information|email).*?(api|partner|vendor|third-party|thirdparty).*?(?!consent)",
+      "message": "Sharing data with third parties without explicit consent",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(send|transmit|share)(.*?)(data|information|email)(.*?)(api|partner|vendor|third-party|thirdparty)(.*?\\{)",
+        "replace": "$1$2$3$4$5$6\n  // GDPR Compliance: Verify third-party data sharing consent\n  if (!hasThirdPartyDataSharingConsent()) {\n    return handleMissingThirdPartyConsent();\n  }\n"
+      }
+    },
+    {
+      "id": "tracking-without-consent",
+      "regex": "(analytics|tracking|fingerprint|monitor).*?(user|visitor|customer).*?(?!consent|opt|permission)",
+      "message": "User tracking without consent verification",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(analytics|tracking|fingerprint|monitor)(.*?)(user|visitor|customer)(.*?\\{)",
+        "replace": "$1$2$3$4\n  // GDPR Compliance: Verify tracking consent\n  if (!hasTrackingConsent()) {\n    return disableTracking();\n  }\n"
+      }
+    },
+    {
+      "id": "data-export-missing",
+      "regex": "(user|account|profile).*?(class|interface|type|struct|object).*?(?!export|download|access)",
+      "message": "User data model without data export functionality (right to access)",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "(user|account|profile)(.*?)(class|interface|type|struct|object)(.*?\\{)",
+        "replace": "$1$2$3$4\n  // GDPR Compliance: Add data export method\n  exportUserData(userId) {\n    // Implement data export in portable format\n    return this.generateUserDataExport(userId);\n  }\n"
+      }
+    }
+  ]
+}
