@@ -1,0 +1,20 @@
+{
+  "fileTypes": ["js", "jsx", "ts", "tsx"],
+  "patterns": [
+    {
+      "type": "import",
+      "regex": "import\\s+(?:(?:\\{[^\\}]*\\})|(?:[^\\{\\}]*))?\\s+from\\s+['\"]([^'\"]+)['\"]",
+      "description": "ES6 import statement"
+    },
+    {
+      "type": "require",
+      "regex": "(?:const|let|var)\\s+(?:\\{[^\\}]*\\}|\\w+)\\s*=\\s*require\\(['\"]([^'\"]+)['\"]\\)",
+      "description": "CommonJS require statement"
+    },
+    {
+      "type": "dynamic-import",
+      "regex": "import\\(['\"]([^'\"]+)['\"]\\)",
+      "description": "Dynamic import"
+    }
+  ]
+}
