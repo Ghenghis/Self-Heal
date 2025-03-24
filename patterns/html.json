@@ -1,0 +1,71 @@
+{
+  "fileTypes": ["html", "htm"],
+  "patterns": [
+    {
+      "id": "missing-doctype",
+      "regex": "^(?:<!DOCTYPE html>)",
+      "message": "Document is missing or has an incorrect DOCTYPE declaration",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "^\\s*(?:<html|<!DOCTYPE[^>]*>.*?<html)",
+        "replace": "<!DOCTYPE html>\n$1"
+      }
+    },
+    {
+      "id": "missing-lang",
+      "regex": "<html(?!\\s+[^>]*?\\s+lang=)[^>]*>",
+      "message": "HTML tag is missing the lang attribute",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "<html",
+        "replace": "<html lang=\"en\""
+      }
+    },
+    {
+      "id": "missing-viewport",
+      "regex": "<head>(?:(?!(\\s)*<meta[^>]*?name=\\\"viewport\\\")[\\s\\S])*?</head>",
+      "message": "Document is missing viewport meta tag",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "(\\s*)(<meta[^>]*charset|<title)",
+        "replace": "$1<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n$1$2"
+      }
+    },
+    {
+      "id": "missing-alt",
+      "regex": "<img(?!\\s+[^>]*?\\s+alt=)[^>]*?>",
+      "message": "Image missing alt attribute for accessibility",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "<img",
+        "replace": "<img alt=\"Image description\""
+      }
+    },
+    {
+      "id": "inline-style",
+      "regex": "<[^>]+style=\\\"[^\\\"]*\\\"",
+      "message": "Using inline styles instead of external stylesheets",
+      "severity": "low",
+      "fix": {
+        "type": "replace",
+        "find": "\\sstyle=\\\"([^\\\"]*)\\\"",
+        "replace": " class=\"inline-styled-element\""
+      }
+    },
+    {
+      "id": "javascript-href",
+      "regex": "<a[^>]*href=\\\"javascript:[^\\\"]*\\\"",
+      "message": "Using javascript: in href attribute",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "href=\\\"javascript:([^\\\"]*)\\\"",
+        "replace": "href=\"#\" onclick=\"$1; return false;\""
+      }
+    }
+  ]
+}
