@@ -1,0 +1,50 @@
+{
+  "excludePaths": [
+    "node_modules",
+    "dist",
+    ".git",
+    "coverage",
+    "tests"
+  ],
+  "scan": {
+    "patterns": [
+      "patterns/javascript.json",
+      "patterns/typescript.json",
+      "patterns/dependencies.json"
+    ]
+  },
+  "securityScan": {
+    "enabled": true,
+    "patterns": [
+      "patterns/security.json"
+    ],
+    "skipSeverities": [],
+    "autoFixSeverities": [
+      "low",
+      "medium",
+      "high"
+    ]
+  },
+  "ai": {
+    "enabled": true,
+    "provider": "claude",
+    "model": "claude-3-7-sonnet",
+    "learnFromFixes": true,
+    "maxTokens": 4000
+  },
+  "reporting": {
+    "outputPath": "reports",
+    "format": "markdown",
+    "includeSummary": true,
+    "includeScreenshots": false
+  },
+  "github": {
+    "createPullRequests": true,
+    "autoMergeLowRisk": false,
+    "branchPrefix": "auto-heal-",
+    "labels": [
+      "self-healing",
+      "automated-fix"
+    ]
+  }
+}
