@@ -1,0 +1,92 @@
+{
+  "fileTypes": ["js", "jsx", "ts", "tsx"],
+  "patterns": [
+    {
+      "id": "missing-dependency",
+      "regex": "import\\s+.*?from\\s+['\"]([^'\"]+)['\"]\\;?",
+      "message": "Imported module might be missing from package.json",
+      "severity": "high",
+      "fix": {
+        "type": "command",
+        "command": "npm install {{match.1}} --save"
+      }
+    },
+    {
+      "id": "unused-variable",
+      "regex": "const\\s+([a-zA-Z0-9_]+)\\s*=.+?(?!\\1).+?;",
+      "message": "Variable declared but never used",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "const\\s+({{match.1}})\\s*=",
+        "replace": "// Unused: const $1 ="
+      }
+    },
+    {
+      "id": "console-log",
+      "regex": "console\\.log\\(.+?\\)",
+      "message": "Console.log statement in production code",
+      "severity": "low",
+      "fix": {
+        "type": "replace",
+        "find": "(console\\.log\\(.+?\\))",
+        "replace": "// $1"
+      }
+    },
+    {
+      "id": "no-strict-mode",
+      "regex": "^(?!['|\"]use strict['|\"];)",
+      "message": "Strict mode not enabled at the top of the file",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "^",
+        "replace": "\"use strict\";\n\n"
+      }
+    },
+    {
+      "id": "try-catch-console",
+      "regex": "catch\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\)\\s*\\{\\s*console\\.error\\(",
+      "message": "Catch block only using console.error",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "catch\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\)\\s*\\{\\s*console\\.error\\(([^;]+)\\);",
+        "replace": "catch ($1) {\n  console.error($2);\n  throw $1; // Re-throw to ensure error is properly handled"
+      }
+    },
+    {
+      "id": "insecure-random",
+      "regex": "Math\\.random\\(\\)",
+      "message": "Using Math.random() for security-sensitive operations",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "Math\\.random\\(\\)",
+        "replace": "crypto.getRandomValues(new Uint8Array(1))[0] / 255"
+      }
+    },
+    {
+      "id": "hardcoded-credentials",
+      "regex": "(password|token|api[_-]?key|secret)\\s*[=:]\\s*['\"][^'\"]+['\"]\\;?",
+      "message": "Hardcoded credentials detected",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(['\"])[^'\"]+(['\"])",
+        "replace": "$1process.env.SECURE_CREDENTIAL$2"
+      }
+    },
+    {
+      "id": "empty-catch",
+      "regex": "catch\\s*\\(\\s*[a-zA-Z0-9_]+\\s*\\)\\s*\\{\\s*\\}",
+      "message": "Empty catch block",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "catch\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\)\\s*\\{\\s*\\}",
+        "replace": "catch ($1) {\n  console.error('Error occurred:', $1);\n  // TODO: Handle this error properly\n}"
+      }
+    }
+  ]
+}
