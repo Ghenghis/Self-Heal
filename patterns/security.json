@@ -1,0 +1,160 @@
+{
+  "fileTypes": ["js", "jsx", "ts", "tsx", "py", "php", "rb", "java"],
+  "patterns": [
+    {
+      "id": "sql-injection-js",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "category": "injection",
+      "regex": "(?:execute|run)(?:Query|Sql)\\s*\\(\\s*['\"`][^'\"]+\\$\\{.*?\\}['\"`]",
+      "description": "Possible SQL injection vulnerability with unescaped user input in query",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(\\w+)\\s*\\(\\s*['\"`]([^'\"]+)\\$\\{(.+?)\\}([^'\"]*)['\"`]",
+        "replace": "$1($2' + db.escape($3) + '$4')"
+      }
+    },
+    {
+      "id": "hardcoded-secret-js",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "category": "hardcoded-secrets",
+      "regex": "(?:const|let|var)\\s+(?:\\w+(?:key|token|secret|password|credential))\\s*=\\s*['\"][a-zA-Z0-9_+=\\/]{16,}['\"]",
+      "description": "Hardcoded secret or credential in source code",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(const|let|var)\\s+(\\w+)\\s*=\\s*(['\"][a-zA-Z0-9_+=\\/]{16,}['\"])",
+        "replace": "$1 $2 = process.env.$2.toUpperCase()"
+      }
+    },
+    {
+      "id": "xss-react",
+      "fileTypes": ["jsx", "tsx"],
+      "category": "cross-site-scripting",
+      "regex": "dangerouslySetInnerHTML=\\{\\{\\s*__html:\\s*(?!DOMPurify\\.sanitize).+?\\}\\}",
+      "description": "Possible XSS vulnerability with unsanitized content in dangerouslySetInnerHTML",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "dangerouslySetInnerHTML=\\{\\{\\s*__html:\\s*(.+?)\\}\\}",
+        "replace": "dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize($1) }}"
+      }
+    },
+    {
+      "id": "path-traversal-js",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "category": "path-traversal",
+      "regex": "(?:fs|require\\(['\"]fs['\"]\\))(?:\\.promises)?\\.[\\w.]+(?:File|Directory|Sync)\\([^,]*(?:\\${|\\+\\s*|,\\s*)(?!path\\.normalize).+?\\)",
+      "description": "Possible path traversal vulnerability with unvalidated user input",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(\\w+\\.[\\w.]+(?:File|Directory|Sync)\\()(.+?)(\\))",
+        "replace": "$1path.normalize($2)$3"
+      }
+    },
+    {
+      "id": "ssrf-node",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "category": "server-side-request-forgery",
+      "regex": "(?:fetch|axios|https?|request)(?:\\.get)?\\(\\s*(?:(?:\\${|\\+|,\\s).+?)",
+      "description": "Possible SSRF vulnerability with unvalidated URL in HTTP request",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "((?:fetch|axios|https?|request)(?:\\.get)?\\()\\s*(.+?)(\\))",
+        "replace": "$1validateUrl($2)$3"
+      }
+    },
+    {
+      "id": "insecure-random-js",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "category": "insecure-randomness",
+      "regex": "Math\\.random\\(\\)",
+      "description": "Insecure random number generation using Math.random() - not suitable for security purposes",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "Math\\.random\\(\\)",
+        "replace": "crypto.randomBytes(8).toString('hex')"
+      }
+    },
+    {
+      "id": "deprecated-node-cipher",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "category": "cryptographic-issues",
+      "regex": "crypto\\.createCipher\\s*\\(",
+      "description": "Use of deprecated and insecure createCipher - should use createCipheriv instead",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "crypto\\.createCipher\\s*\\(",
+        "replace": "crypto.createCipheriv("
+      }
+    },
+    {
+      "id": "nosql-injection-js",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "category": "injection",
+      "regex": "(?:find|update|delete)One\\(\\s*\\{\\s*[\"']\\w+[\"']\\s*:\\s*(?:req\\.(?:params|query|body)|\\${).+?\\}\\s*\\)",
+      "description": "Possible NoSQL injection with unvalidated user input",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(\\w+)\\(\\s*\\{\\s*([\"']\\w+[\"'])\\s*:\\s*(req\\.(?:params|query|body)|\\${.+?})(\\s*\\}\\s*\\))",
+        "replace": "$1({ $2: mongoose.Types.ObjectId($3) })"
+      }
+    },
+    {
+      "id": "eval-usage",
+      "fileTypes": ["js", "jsx", "ts", "tsx", "py", "php", "rb"],
+      "category": "code-injection",
+      "regex": "eval\\s*\\(.+?\\)",
+      "description": "Use of eval() function is potentially dangerous",
+      "severity": "critical",
+      "fix": {
+        "type": "comment",
+        "message": "// SECURITY: Dangerous use of eval() detected - consider safer alternatives"
+      }
+    },
+    {
+      "id": "cors-all-origins",
+      "fileTypes": ["js", "jsx", "ts", "tsx"],
+      "category": "unsafe-cors",
+      "regex": "(?:Access-Control-Allow-Origin|cors\\(\\s*\\{\\s*origin\\s*:\\s*)[\"']\\*[\"']",
+      "description": "CORS policy allows requests from any origin",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "(Access-Control-Allow-Origin|cors\\(\\s*\\{\\s*origin\\s*:)\\s*[\"']\\*[\"']",
+        "replace": "$1 process.env.ALLOWED_ORIGINS.split(',')"
+      }
+    },
+    {
+      "id": "python-shell-injection",
+      "fileTypes": ["py"],
+      "category": "injection",
+      "regex": "(?:os\\.system|subprocess\\.call|subprocess\\.Popen)\\s*\\([f\"].*?\\{.+?\\}",
+      "description": "Possible shell injection in Python subprocess",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(os\\.system|subprocess\\.call)\\s*\\(([f\"'].+?[\"'])",
+        "replace": "subprocess.run($2, shell=False, check=True, text=True, capture_output=True"
+      }
+    },
+    {
+      "id": "unvalidated-redirect",
+      "fileTypes": ["js", "jsx", "ts", "tsx", "py", "php", "rb"],
+      "category": "unvalidated-redirects",
+      "regex": "(?:res\\.redirect|redirect_to|header\\(['\"]Location:)\\s*(?:\\(\\s*|\\s+)(?:req\\.(?:query|params|body)|\\${).+?(?:\\)|;)",
+      "description": "Unvalidated redirect using user-supplied URL",
+      "severity": "medium",
+      "fix": {
+        "type": "replace",
+        "find": "(res\\.redirect|redirect_to|header\\(['\"]Location:)\\s*(?:\\(\\s*|\\s+)(req\\.(?:query|params|body)|\\${.+?})(\\)|;)",
+        "replace": "$1 validateRedirectUrl($2)$3"
+      }
+    }
+  ]
+}
