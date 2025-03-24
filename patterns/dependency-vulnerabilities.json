@@ -1,0 +1,202 @@
+{
+  "javascript": [
+    {
+      "packageName": "lodash",
+      "vulnerableVersions": ["<4.17.19"],
+      "severity": "high",
+      "title": "Prototype Pollution",
+      "description": "Versions of lodash prior to 4.17.19 are vulnerable to Prototype Pollution. The vulnerable functions allow properties and methods to be added to the global Object.prototype.",
+      "fixedVersion": "4.17.19"
+    },
+    {
+      "packageName": "axios",
+      "vulnerableVersions": ["<0.21.1"],
+      "severity": "high",
+      "title": "Server-Side Request Forgery",
+      "description": "Versions of axios prior to 0.21.1 allow attackers to cause Server Side Request Forgery by providing a URL with an arbitrary protocol.",
+      "fixedVersion": "0.21.1"
+    },
+    {
+      "packageName": "minimist",
+      "vulnerableVersions": ["<0.2.1", "<1.2.3"],
+      "severity": "medium",
+      "title": "Prototype Pollution",
+      "description": "Affected versions of minimist are vulnerable to prototype pollution. Arguments are not properly sanitized, allowing an attacker to modify the prototype of Object.",
+      "fixedVersion": "1.2.3"
+    },
+    {
+      "packageName": "node-fetch",
+      "vulnerableVersions": ["<2.6.1"],
+      "severity": "high",
+      "title": "Denial of Service",
+      "description": "Versions of node-fetch prior to 2.6.1 are vulnerable to denial of service. The keepalive option is not properly checked.",
+      "fixedVersion": "2.6.1"
+    },
+    {
+      "packageName": "jquery",
+      "vulnerableVersions": ["<3.5.0"],
+      "severity": "medium",
+      "title": "Cross-site Scripting",
+      "description": "Versions of jquery prior to 3.5.0 are vulnerable to Cross-site Scripting due to incorrect html parsing.",
+      "fixedVersion": "3.5.0"
+    },
+    {
+      "packageName": "y18n",
+      "vulnerableVersions": ["<4.0.1", "<5.0.5"],
+      "severity": "high",
+      "title": "Prototype Pollution",
+      "description": "Versions of y18n prior to 4.0.1 and 5.0.5 are vulnerable to prototype pollution.",
+      "fixedVersion": "5.0.5"
+    },
+    {
+      "packageName": "socket.io",
+      "vulnerableVersions": ["<2.4.0"],
+      "severity": "high",
+      "title": "Regular Expression Denial of Service",
+      "description": "Versions of socket.io prior to 2.4.0 are vulnerable to Regular Expression Denial of Service in the object parameter.",
+      "fixedVersion": "2.4.0"
+    },
+    {
+      "packageName": "elliptic",
+      "vulnerableVersions": ["<6.5.4"],
+      "severity": "high",
+      "title": "Signature Malleability",
+      "description": "Versions of elliptic prior to 6.5.4 are vulnerable to Signature Malleability by tampering the pre-computed signature pair.",
+      "fixedVersion": "6.5.4"
+    },
+    {
+      "packageName": "glob-parent",
+      "vulnerableVersions": ["<5.1.2"],
+      "severity": "high",
+      "title": "Regular Expression Denial of Service",
+      "description": "Versions of glob-parent prior to 5.1.2 are vulnerable to Regular Expression Denial of Service when handling unusual filepath strings.",
+      "fixedVersion": "5.1.2"
+    },
+    {
+      "packageName": "ws",
+      "vulnerableVersions": ["<7.4.6"],
+      "severity": "high",
+      "title": "Denial of Service",
+      "description": "Versions of ws prior to 7.4.6 are vulnerable to denial of service by excessive memory usage.",
+      "fixedVersion": "7.4.6"
+    }
+  ],
+  "python": [
+    {
+      "packageName": "django",
+      "vulnerableVersions": ["<3.2.5", "<2.2.24"],
+      "severity": "high",
+      "title": "SQL Injection",
+      "description": "Django before 2.2.24 and 3.2.5 has an SQL injection vulnerability in the QuerySet.order_by() function.",
+      "fixedVersion": "3.2.5"
+    },
+    {
+      "packageName": "flask",
+      "vulnerableVersions": ["<2.0.1"],
+      "severity": "high",
+      "title": "XSS Vulnerability",
+      "description": "Flask before 2.0.1 has a cross-site scripting vulnerability in the default 404 and 500 HTML pages.",
+      "fixedVersion": "2.0.1"
+    },
+    {
+      "packageName": "PyYAML",
+      "vulnerableVersions": ["<5.4"],
+      "severity": "critical",
+      "title": "Code Execution Vulnerability",
+      "description": "PyYAML before 5.4 has a code execution vulnerability when loading untrusted YAML files.",
+      "fixedVersion": "5.4"
+    },
+    {
+      "packageName": "requests",
+      "vulnerableVersions": ["<2.20.0"],
+      "severity": "high",
+      "title": "Information Disclosure",
+      "description": "Requests before 2.20.0 has an information disclosure vulnerability with CRLF sequences.",
+      "fixedVersion": "2.20.0"
+    },
+    {
+      "packageName": "pillow",
+      "vulnerableVersions": ["<8.3.2"],
+      "severity": "high",
+      "title": "Multiple Vulnerabilities",
+      "description": "Pillow before 8.3.2 has multiple security vulnerabilities including memory leaks and potential arbitrary code execution.",
+      "fixedVersion": "8.3.2"
+    },
+    {
+      "packageName": "cryptography",
+      "vulnerableVersions": ["<3.3.2"],
+      "severity": "medium",
+      "title": "Information Leak",
+      "description": "Cryptography before 3.3.2 has an information leak vulnerability during prime number validation.",
+      "fixedVersion": "3.3.2"
+    },
+    {
+      "packageName": "jinja2",
+      "vulnerableVersions": ["<2.11.3"],
+      "severity": "medium",
+      "title": "Regular Expression Denial of Service",
+      "description": "Jinja2 before 2.11.3 could be vulnerable to Regular Expression Denial of Service in the urlize filter.",
+      "fixedVersion": "2.11.3"
+    },
+    {
+      "packageName": "urllib3",
+      "vulnerableVersions": ["<1.26.5"],
+      "severity": "high",
+      "title": "CRLF Injection",
+      "description": "Urllib3 before 1.26.5 has a CRLF injection vulnerability in the HTTP client when using url parameters.",
+      "fixedVersion": "1.26.5"
+    },
+    {
+      "packageName": "sqlalchemy",
+      "vulnerableVersions": ["<1.4.0"],
+      "severity": "medium",
+      "title": "SQL Injection",
+      "description": "SQLAlchemy before 1.4.0 has a potential SQL injection vulnerability in certain circumstances.",
+      "fixedVersion": "1.4.0"
+    },
+    {
+      "packageName": "werkzeug",
+      "vulnerableVersions": ["<2.0.0"],
+      "severity": "medium",
+      "title": "Path Traversal",
+      "description": "Werkzeug before 2.0.0 has a path traversal vulnerability in the secure_filename function.",
+      "fixedVersion": "2.0.0"
+    }
+  ],
+  "java": [
+    {
+      "packageName": "org.apache.logging.log4j:log4j-core",
+      "vulnerableVersions": [">2.0.0", "<2.15.0"],
+      "severity": "critical",
+      "title": "Log4Shell",
+      "description": "Apache Log4j2 <=2.14.1 JNDI features used in configuration, log messages, and parameters do not protect against attacker controlled LDAP and other JNDI related endpoints.",
+      "fixedVersion": "2.15.0"
+    },
+    {
+      "packageName": "com.fasterxml.jackson.core:jackson-databind",
+      "vulnerableVersions": ["<2.12.0"],
+      "severity": "high",
+      "title": "Multiple Deserialization Vulnerabilities",
+      "description": "Multiple deserialization vulnerabilities in Jackson-databind before 2.12.0 could lead to remote code execution.",
+      "fixedVersion": "2.12.0"
+    }
+  ],
+  "ruby": [
+    {
+      "packageName": "rails",
+      "vulnerableVersions": ["<6.1.4"],
+      "severity": "high",
+      "title": "Multiple Vulnerabilities",
+      "description": "Rails before 6.1.4 has multiple vulnerabilities including potential DoS and XSS attacks.",
+      "fixedVersion": "6.1.4"
+    },
+    {
+      "packageName": "nokogiri",
+      "vulnerableVersions": ["<1.11.4"],
+      "severity": "high",
+      "title": "Command Injection",
+      "description": "Nokogiri before 1.11.4 has a command injection vulnerability in the XSLT transform function.",
+      "fixedVersion": "1.11.4"
+    }
+  ]
+}

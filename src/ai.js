@@ -1,292 +1,159 @@
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+/**
+ * AI Integration Module
+ * 
+ * Provides integration with Claude 3.7 AI for enhanced analysis and healing.
+ */
 
-class ClaudeAI {
-  constructor(apiKey) {
-    this.apiKey = apiKey;
-    this.baseURL = 'https://api.anthropic.com/v1/messages';
-    this.model = 'claude-3-7-sonnet-20250224';
-  }
+const { Anthropic } = require('anthropic');
+require('dotenv').config();
 
-  /**
-   * Analyze code for potential issues
-   * @param {string} filePath - Path to the file
-   * @param {string} fileContent - Content of the file
-   * @param {string} fileType - File extension
-   * @returns {Promise<Array>} - List of issues found
-   */
-  async analyzeCode(filePath, fileContent, fileType) {
-    const prompt = `
-You are an expert code reviewer specializing in identifying issues in ${fileType} files.
+// Initialize Anthropic client with API key
+const apiKey = process.env.CLAUDE_API_KEY || '';
+let anthropic = null;
 
-Analyze this code and identify any problems, including but not limited to:
-1. Syntax errors
-2. Missing dependencies
-3. Security vulnerabilities
-4. Performance issues
-5. Best practice violations
-
-For each issue, provide:
-- Line number
-- Issue description
-- Severity (high, medium, low)
-- Suggested fix as code
-
-File: ${filePath}
-
-\`\`\`${fileType}
-${fileContent}
-\`\`\`
-
-Format your response as a JSON array with objects having these properties:
-{
-  "line": number,
-  "description": string,
-  "severity": string,
-  "fix": {
-    "type": string, // "replace", "insert", "delete"
-    "original": string,
-    "replacement": string
-  }
+if (apiKey) {
+  anthropic = new Anthropic({
+    apiKey
+  });
 }
-`;
 
-    try {
-      const response = await axios.post(
-        this.baseURL,
-        {
-          model: this.model,
-          max_tokens: 4096,
-          messages: [
-            { role: 'user', content: prompt }
-          ]
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': this.apiKey,
-            'anthropic-version': '2023-06-01'
-          }
-        }
-      );
-
-      // Extract JSON from Claude's response
-      const content = response.data.content;
-      const jsonContent = this.extractJSON(content);
-      
-      if (jsonContent) {
-        return jsonContent;
-      }
-      
-      console.error('Failed to parse AI response as JSON');
-      return [];
-    } catch (error) {
-      console.error('Error calling Claude API:', error.message);
-      return [];
-    }
+/**
+ * Query the Claude AI model
+ * 
+ * @param {string} prompt - The prompt to send to Claude
+ * @param {object} options - Additional options
+ * @returns {Promise<string>} The AI response
+ */
+async function queryAI(prompt, options = {}) {
+  if (!anthropic) {
+    console.warn('Claude API key not found. AI features disabled.');
+    return 'AI analysis unavailable. Please set CLAUDE_API_KEY environment variable.';
   }
-
-  /**
-   * Generate a fix for a specific issue
-   * @param {string} fileContent - Content of the file
-   * @param {string} fileType - File extension
-   * @param {Object} issue - Issue to fix
-   * @returns {Promise<string>} - Fixed code
-   */
-  async generateFix(fileContent, fileType, issue) {
-    const prompt = `
-You are an expert code fixer specializing in ${fileType} files.
-
-I have a file with this content:
-
-\`\`\`${fileType}
-${fileContent}
-\`\`\`
-
-There's an issue at line ${issue.line}: "${issue.description}"
-
-Please fix this issue. Provide only the complete fixed file content, with no additional explanations.
-`;
-
-    try {
-      const response = await axios.post(
-        this.baseURL,
-        {
-          model: this.model,
-          max_tokens: 4096,
-          messages: [
-            { role: 'user', content: prompt }
-          ]
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': this.apiKey,
-            'anthropic-version': '2023-06-01'
-          }
-        }
-      );
-
-      // Extract code from Claude's response
-      const content = response.data.content;
-      const codeContent = this.extractCode(content, fileType);
-      
-      if (codeContent) {
-        return codeContent;
-      }
-      
-      console.error('Failed to extract code from AI response');
-      return fileContent; // Return original if we failed
-    } catch (error) {
-      console.error('Error calling Claude API:', error.message);
-      return fileContent; // Return original if we failed
-    }
-  }
-
-  /**
-   * Learn from a repository to create custom patterns
-   * @param {string} repoPath - Path to the repository
-   * @returns {Promise<Array>} - List of custom patterns
-   */
-  async learnFromRepository(repoPath) {
-    // Gather repository statistics and common patterns
-    const fileTypes = {};
-    const fileCount = this.countFiles(repoPath, fileTypes);
+  
+  try {
+    const defaultOptions = {
+      model: 'claude-3-7-sonnet-20250219',
+      maxTokens: 4000,
+      temperature: 0.2,
+      system: 'You are an expert code security and dependency vulnerability analyst. Your task is to help identify and fix security issues in code and dependencies.'
+    };
     
-    const prompt = `
-You are an AI specializing in code pattern recognition.
-
-I have a repository with ${fileCount} files. Here's the breakdown by file type:
-${Object.entries(fileTypes).map(([ext, count]) => `- ${ext}: ${count} files`).join('\n')}
-
-Based on this information, generate a list of custom patterns that would be useful for detecting issues in this type of project.
-For each pattern, provide:
-1. A regular expression to match the pattern
-2. A description of the issue
-3. The severity level
-4. A suggested fix template
-
-Format your response as a JSON array with objects having these properties:
-{
-  "fileTypes": [string],
-  "regex": string,
-  "message": string,
-  "severity": string,
-  "fix": {
-    "type": string,
-    "find": string,
-    "replace": string
-  }
-}
-`;
-
-    try {
-      const response = await axios.post(
-        this.baseURL,
-        {
-          model: this.model,
-          max_tokens: 4096,
-          messages: [
-            { role: 'user', content: prompt }
-          ]
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': this.apiKey,
-            'anthropic-version': '2023-06-01'
-          }
-        }
-      );
-
-      // Extract JSON from Claude's response
-      const content = response.data.content;
-      const jsonContent = this.extractJSON(content);
-      
-      if (jsonContent) {
-        return jsonContent;
-      }
-      
-      console.error('Failed to parse AI response as JSON');
-      return [];
-    } catch (error) {
-      console.error('Error calling Claude API:', error.message);
-      return [];
-    }
-  }
-
-  /**
-   * Extract JSON from Claude's text response
-   * @param {string} text - Claude's response
-   * @returns {Array|null} - Parsed JSON or null
-   */
-  extractJSON(text) {
-    // Find JSON in the response
-    const jsonRegex = /\[\s*{[\s\S]*}\s*\]/;
-    const match = text.match(jsonRegex);
+    const requestOptions = {
+      ...defaultOptions,
+      ...options
+    };
     
-    if (match) {
-      try {
-        return JSON.parse(match[0]);
-      } catch (e) {
-        console.error('JSON parsing error:', e.message);
-      }
-    }
+    const response = await anthropic.messages.create({
+      model: requestOptions.model,
+      max_tokens: requestOptions.maxTokens,
+      temperature: requestOptions.temperature,
+      system: requestOptions.system,
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
     
-    return null;
-  }
-
-  /**
-   * Extract code from Claude's text response
-   * @param {string} text - Claude's response
-   * @param {string} fileType - File extension
-   * @returns {string|null} - Extracted code or null
-   */
-  extractCode(text, fileType) {
-    // Find code block in the response
-    const codeRegex = new RegExp(`\`\`\`(?:${fileType})?([\s\S]*?)\`\`\``);
-    const match = text.match(codeRegex);
-    
-    if (match) {
-      return match[1].trim();
-    }
-    
-    return null;
-  }
-
-  /**
-   * Count files in a directory recursively
-   * @param {string} dir - Directory path
-   * @param {Object} fileTypes - Object to store file type counts
-   * @returns {number} - Total file count
-   */
-  countFiles(dir, fileTypes) {
-    let count = 0;
-    
-    const files = fs.readdirSync(dir);
-    
-    for (const file of files) {
-      const filePath = path.join(dir, file);
-      
-      if (fs.statSync(filePath).isDirectory()) {
-        // Skip node_modules and .git directories
-        if (file !== 'node_modules' && file !== '.git') {
-          count += this.countFiles(filePath, fileTypes);
-        }
-      } else {
-        count++;
-        
-        // Count file types
-        const ext = path.extname(file).slice(1);
-        if (ext) {
-          fileTypes[ext] = (fileTypes[ext] || 0) + 1;
-        }
-      }
-    }
-    
-    return count;
+    return response.content[0].text;
+  } catch (error) {
+    console.error('Error querying Claude AI:', error.message);
+    return `Error: ${error.message}`;
   }
 }
 
-module.exports = ClaudeAI;
+/**
+ * Analyze code for security vulnerabilities
+ * 
+ * @param {string} code - The code to analyze
+ * @param {string} language - The programming language
+ * @returns {Promise<object>} Analysis results
+ */
+async function analyzeCodeSecurity(code, language) {
+  const prompt = `
+    Please analyze the following ${language} code for security vulnerabilities, bad practices, and potential bugs:
+    
+    \`\`\`${language}
+    ${code}
+    \`\`\`
+    
+    For each issue you find, provide:
+    1. Line number(s) where the issue occurs
+    2. Description of the issue
+    3. Severity (low, moderate, high, critical)
+    4. Suggested fix (code snippet)
+    
+    Return your analysis as a JSON array of objects with these properties: lineNumber, description, severity, fix.
+    If no issues are found, return an empty array.
+  `;
+  
+  try {
+    const response = await queryAI(prompt);
+    return JSON.parse(response);
+  } catch (error) {
+    console.error('Error parsing AI analysis:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Analyze project dependencies for security vulnerabilities
+ * 
+ * @param {object} dependencies - The project dependencies
+ * @returns {Promise<object>} Analysis results
+ */
+async function analyzeDependencies(dependencies) {
+  const prompt = `
+    Please analyze these project dependencies for security vulnerabilities:
+    
+    ${JSON.stringify(dependencies, null, 2)}
+    
+    For each vulnerable dependency, provide:
+    1. Package name
+    2. Current version
+    3. Description of the vulnerability
+    4. Severity (low, moderate, high, critical)
+    5. Recommended version to update to
+    
+    Return your analysis as a JSON array of objects with these properties: packageName, currentVersion, description, severity, recommendedVersion.
+    If no vulnerabilities are found, return an empty array.
+  `;
+  
+  try {
+    const response = await queryAI(prompt);
+    return JSON.parse(response);
+  } catch (error) {
+    console.error('Error parsing AI dependency analysis:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Generate a fix for a code issue
+ * 
+ * @param {string} code - The original code
+ * @param {object} issue - The issue to fix
+ * @returns {Promise<string>} The fixed code
+ */
+async function generateCodeFix(code, issue) {
+  const prompt = `
+    Please fix the following issue in this code:
+    
+    Original code:
+    \`\`\`
+    ${code}
+    \`\`\`
+    
+    Issue:
+    ${JSON.stringify(issue, null, 2)}
+    
+    Provide ONLY the complete fixed code, without any explanations or markdown.
+  `;
+  
+  return await queryAI(prompt);
+}
+
+module.exports = {
+  queryAI,
+  analyzeCodeSecurity,
+  analyzeDependencies,
+  generateCodeFix
+};

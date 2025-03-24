@@ -1,4 +1,4 @@
-name: Project Healer
+name: Self-Heal Framework
 
 on:
   push:
@@ -6,45 +6,82 @@ on:
   pull_request:
     branches: [ main, develop ]
   schedule:
-    - cron: '0 0 * * 1'  # Weekly check
-  workflow_dispatch:     # Manual trigger
+    - cron: '0 0 * * 1'  # Weekly check on Mondays
+  workflow_dispatch:  # Manual trigger
 
 jobs:
-  heal:
+  analyze_and_heal:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Full history for better analysis
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
       
       - name: Install dependencies
         run: npm ci
       
-      - name: Scan for issues
-        id: scan
-        run: node src/index.js scan
-        env:
-          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+      # New step for dependency vulnerability scanning
+      - name: Scan for dependency vulnerabilities
+        id: dependency-scan
+        run: |
+          node ./src/cli.js scan --type=dependency
+          echo "::set-output name=vulnerabilities_found::$(cat ./.self-heal/reports/dependency-vulnerabilities.json | jq '.total')"
+          echo "::set-output name=auto_fixable::$(cat ./.self-heal/reports/dependency-vulnerabilities.json | jq '.summary.autoFixable')"
       
-      - name: Apply fixes
-        if: steps.scan.outputs.issues_found == 'true'
-        id: heal
-        run: node src/index.js heal
-        env:
-          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+      - name: Scan for code issues
+        id: code-scan
+        run: |
+          node ./src/cli.js scan --type=code
+          echo "::set-output name=issues_found::$(cat ./.self-heal/reports/code-issues.json | jq '.total')"
+          echo "::set-output name=auto_fixable::$(cat ./.self-heal/reports/code-issues.json | jq '.summary.autoFixable')"
       
-      - name: Create Pull Request
-        if: steps.heal.outputs.fixes_applied == 'true'
-        uses: peter-evans/create-pull-request@v5
+      # New step for healing dependency vulnerabilities
+      - name: Fix dependency vulnerabilities
+        if: steps.dependency-scan.outputs.auto_fixable > 0
+        id: dependency-fix
+        run: |
+          node ./src/cli.js heal --type=dependency
+          echo "::set-output name=fixes_applied::$(cat ./.self-heal/reports/dependency-fixes.json | jq '.updated | length')"
+      
+      - name: Fix code issues
+        if: steps.code-scan.outputs.auto_fixable > 0
+        id: code-fix
+        run: |
+          node ./src/cli.js heal --type=code
+          echo "::set-output name=fixes_applied::$(cat ./.self-heal/reports/code-fixes.json | jq '.updated | length')"
+      
+      - name: Generate report
+        run: node ./src/cli.js report
+        
+      - name: Create Pull Request for fixes
+        if: ${{ steps.dependency-fix.outputs.fixes_applied > 0 || steps.code-fix.outputs.fixes_applied > 0 }}
+        uses: peter-evans/create-pull-request@v3
         with:
-          commit-message: "🩹 Automated fixes by Project Healer"
-          title: "Self-Healing: Automated Fixes"
-          body: ${{ steps.heal.outputs.pr_body }}
-          branch: auto-heal-${{ github.run_id }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "🩹 Self-Heal: Automated fixes"
+          title: "🩹 Self-Heal: Automated fixes"
+          body: |
+            This PR contains automated fixes applied by the Self-Heal system.
+            
+            ## Dependency Vulnerabilities Fixed
+            ${{ steps.dependency-fix.outputs.fixes_applied }} vulnerabilities fixed.
+            
+            ## Code Issues Fixed
+            ${{ steps.code-fix.outputs.fixes_applied }} issues fixed.
+            
+            Please review the changes carefully before merging.
+          branch: self-heal-fixes-${{ github.run_id }}
+          base: ${{ github.ref }}
+          labels: automated-pr, security
+      
+      # Additional notification steps can be added here
+      - name: Notify if issues found
+        if: ${{ steps.dependency-scan.outputs.vulnerabilities_found > 0 || steps.code-scan.outputs.issues_found > 0 }}
+        run: |
+          echo "::warning::Self-Heal found issues in your project! Check the generated report for details."
