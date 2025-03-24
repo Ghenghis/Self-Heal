@@ -1,52 +1,38 @@
-# Self-Heal: AI-Powered Project Healing Framework
+# Project Healer 🩹
 
-Self-Heal is a compact, robust framework that automatically detects and fixes issues in your projects. Leveraging the power of Claude 3.7 AI, it creates a truly self-healing development environment that keeps your projects secure and healthy.
-
-![Self-Heal Banner](https://via.placeholder.com/1200x300/0066cc/ffffff?text=Self-Heal)
+A self-healing framework for GitHub projects that automatically detects and fixes issues, dependencies, and security vulnerabilities.
 
 ## Features
 
-- 🔍 **Dependency Vulnerability Detection**: Automatically identifies security vulnerabilities in project dependencies
-- 🛡️ **Automated Vulnerability Fixes**: Updates vulnerable dependencies to secure versions
-- 🤖 **AI-Powered Analysis**: Leverages Claude 3.7 for intelligent issue detection and fixing
-- 🔄 **GitHub Integration**: Seamlessly works with GitHub Actions for continuous healing
-- 📊 **Comprehensive Reporting**: Generates detailed reports of issues and fixes
-- 🧰 **Cross-Platform Support**: Works with multiple project types (npm, pip, Maven, Gradle, etc.)
+- 🔍 **Automated Issue Detection**: Scans code for problems, outdated dependencies, and best practice violations
+- 🛡️ **Security Vulnerability Scanning**: Identifies security issues with pattern matching and AI
+- 🔧 **Automated Fixing**: Applies fixes to common issues and vulnerabilities
+- 📈 **Comprehensive Reporting**: Generates detailed reports on issues and fixes
+- 🧠 **Self-Improving**: Learns from successful fixes to handle more issues over time
+- 🤖 **GitHub Integration**: Runs automatically via GitHub Actions
 
-## Quick Start
+## Security Vulnerability Scanner
+
+The newly added security vulnerability scanner can detect and fix common security issues in your codebase:
+
+- SQL Injection vulnerabilities
+- Cross-Site Scripting (XSS) issues
+- Path Traversal vulnerabilities
+- Server-Side Request Forgery (SSRF)
+- Insecure Randomness
+- Hardcoded Secrets
+- Insecure Deserialization
+- Unvalidated Redirects
+- And many more...
+
+## Getting Started
 
 ### Installation
 
-```bash
-# Install from npm
-npm install -g self-heal
-
-# Or clone and install
-git clone https://github.com/Ghenghis/Self-Heal.git
-cd Self-Heal
-npm install
-npm link
-```
-
-### Basic Usage
-
-```bash
-# Scan your project for issues
-self-heal scan
-
-# Apply fixes to issues
-self-heal heal
-
-# Generate a comprehensive report
-self-heal report
-```
-
-### GitHub Actions Integration
-
-Add this to your project's `.github/workflows/self-heal.yml`:
+1. Add the GitHub Actions workflow to your repository:
 
 ```yaml
-name: Self-Heal
+name: Project Healer
 
 on:
   push:
@@ -54,108 +40,116 @@ on:
   pull_request:
     branches: [ main, develop ]
   schedule:
-    - cron: '0 0 * * 1'  # Weekly check on Mondays
-  workflow_dispatch:  # Manual trigger
+    - cron: '0 0 * * 1'  # Weekly check
+  workflow_dispatch:     # Manual trigger
 
 jobs:
-  analyze_and_heal:
+  heal:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        
+      - uses: actions/checkout@v3
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          
-      - name: Install Self-Heal
-        run: npm install -g self-heal
-        
-      - name: Scan and heal
-        run: self-heal scan && self-heal heal
+      - name: Install dependencies
+        run: npm install -g project-healer
+      - name: Scan and Heal
+        run: project-healer heal --all --report
         env:
           CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
-        
-      - name: Create PR for fixes
-        uses: peter-evans/create-pull-request@v3
-        with:
-          commit-message: "🩹 Self-Heal: Automated fixes"
-          title: "🩹 Self-Heal: Automated fixes"
-          branch: self-heal-fixes
 ```
 
-## Key Components
+2. Set up the Claude API key in your repository secrets (if using AI-powered healing)
 
-1. **Vulnerability Scanner**: Detects security issues in dependencies
-2. **Dependency Updater**: Automatically fixes vulnerable dependencies
-3. **AI Integration**: Uses Claude 3.7 for enhanced analysis and healing
-4. **GitHub Actions Workflow**: Automates the entire process
+### Usage
 
-## AI-Powered Features
+#### GitHub Actions
 
-Self-Heal leverages Claude 3.7, a state-of-the-art AI model, to:
+The GitHub Actions workflow will automatically:
 
-- Detect complex security patterns that rule-based systems might miss
-- Generate targeted fixes for specific vulnerabilities
-- Learn from projects to improve detection and healing capabilities
-- Provide intelligent insights on security issues
+1. Scan your project for issues and security vulnerabilities
+2. Apply appropriate fixes
+3. Create a Pull Request with the changes
+4. Generate reports for review
+
+#### Command Line
+
+You can also use Project Healer as a command-line tool:
+
+```bash
+# Install
+npm install -g project-healer
+
+# Scan for issues
+project-healer scan --report
+
+# Scan for security vulnerabilities
+project-healer security-scan --report
+
+# Apply fixes
+project-healer heal --all
+
+# Learn from project history
+project-healer learn
+```
+
+## Example Security Scan Report
+
+Here's an example of the security vulnerability scanning report:
+
+```markdown
+# Security Vulnerability Report
+
+## Summary
+
+- **Total vulnerabilities:** 5
+- **Critical:** 1
+- **High:** 3
+- **Medium:** 1
+
+## Fix Results
+
+- **Fixed:** 4
+- **Failed:** 0
+- **Skipped:** 1
+
+## Vulnerabilities
+
+### Critical Severity
+
+#### sql-injection in auth.js:42
+
+- **File:** `src/controllers/auth.js`
+- **Line:** 42
+- **Description:** Possible SQL injection vulnerability with unescaped user input in query
+- **Code:**
+```sql
+const user = await db.query(`SELECT * FROM users WHERE email = '${email}'`);
+```
+- **Status:** fixed
+
+...
+```
 
 ## Configuration
 
-Create a `.env` file in your project root:
-
-```
-CLAUDE_API_KEY=your_api_key_here
-```
-
-Or configure options via command line:
-
-```bash
-self-heal scan --fix-level=high --use-ai
-```
-
-## Advanced Usage
-
-### Custom Patterns
-
-Create custom vulnerability patterns in the `patterns` directory:
+You can customize the behavior of Project Healer by creating a `.healerrc.json` file in your project root:
 
 ```json
 {
-  "javascript": [
-    {
-      "packageName": "custom-package",
-      "vulnerableVersions": ["<1.0.0"],
-      "severity": "high",
-      "title": "Custom Vulnerability",
-      "description": "Description of the vulnerability",
-      "fixedVersion": "1.0.0"
-    }
-  ]
+  "excludePaths": ["node_modules", "dist", ".git"],
+  "securityScan": {
+    "skipSeverities": ["low"],
+    "customPatterns": "patterns/custom-security.json"
+  },
+  "ai": {
+    "enabled": true,
+    "learnFromFixes": true
+  }
 }
 ```
 
-### Integration with MCP Doctor
-
-Self-Heal can be integrated with MCP Doctor as a submodule:
-
-```bash
-# In your MCP Doctor project
-git submodule add https://github.com/Ghenghis/Self-Heal.git tools/self-heal
-```
-
-Then add to your workflow:
-
-```yaml
-- name: Run Self-Heal
-  run: node tools/self-heal/src/cli.js scan
-```
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT
