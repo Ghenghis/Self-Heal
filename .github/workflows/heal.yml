@@ -2,9 +2,7 @@ name: Project Healer
 
 on:
   push:
-    branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
   schedule:
     - cron: '0 0 * * 1'  # Weekly check
   workflow_dispatch:     # Manual trigger
@@ -13,38 +11,31 @@ jobs:
   heal:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v3
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '16'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
-      - name: Scan for issues
-        id: scan
-        run: node src/index.js scan
+      - name: Scan and Heal
+        run: npm run healer -- --fix --report --graph
         env:
           CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
-      
-      - name: Apply fixes
-        if: steps.scan.outputs.issues_found == 'true'
-        id: heal
-        run: node src/index.js heal
-        env:
-          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
-      
-      - name: Create Pull Request
-        if: steps.heal.outputs.fixes_applied == 'true'
-        uses: peter-evans/create-pull-request@v5
+        
+      - name: Upload dependency graph
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependency-graph
+          path: healer-report/dependency-graph.html
+        
+      - name: Commit Fixes
+        if: env.FIXES_APPLIED == 'true'
+        uses: peter-evans/create-pull-request@v3
         with:
           commit-message: "🩹 Automated fixes by Project Healer"
           title: "Self-Healing: Automated Fixes"
-          body: ${{ steps.heal.outputs.pr_body }}
           branch: auto-heal-${{ github.run_id }}
-          token: ${{ secrets.GITHUB_TOKEN }}
