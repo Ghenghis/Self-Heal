@@ -1,0 +1,115 @@
+{
+  "fileTypes": ["js", "jsx", "ts", "tsx", "php", "py", "rb"],
+  "patterns": [
+    {
+      "id": "sql-injection",
+      "regex": "(executeQuery|query|execute)\\s*\\([^)]*?\\$?['\"][^'\"]*?(['\"]\\s*\\+|\\$\\{|\\{\\{|\\#\\{|\\$[a-zA-Z0-9_]+|\\%s)",
+      "message": "Potential SQL Injection vulnerability: User input used directly in SQL query",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(executeQuery|query|execute)\\s*\\(\\s*['\"](.+?)['\"]",
+        "replace": "$1(\"$2\", [userInput])"
+      }
+    },
+    {
+      "id": "xss-vulnerable-output",
+      "regex": "(innerHTML|outerHTML|document\\.write)\\s*=\\s*(['\"].*?)?[^'\"]*?([a-zA-Z0-9_]+).*?['\"]?",
+      "message": "Potential XSS vulnerability: User input rendered directly to HTML",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(innerHTML|outerHTML|document\\.write)\\s*=\\s*(.+)",
+        "replace": "textContent = $2"
+      }
+    },
+    {
+      "id": "insecure-cookie",
+      "regex": "document\\.cookie\\s*=\\s*['\"][^;]*?;(?![^;]*?secure;)(?![^;]*?HttpOnly;)",
+      "message": "Insecure cookie: Missing 'secure' and 'HttpOnly' flags",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(document\\.cookie\\s*=\\s*['\"][^;]*?)(;)",
+        "replace": "$1; secure; HttpOnly$2"
+      }
+    },
+    {
+      "id": "eval-usage",
+      "regex": "eval\\s*\\(",
+      "message": "Use of 'eval()' function is a security risk",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "eval\\s*\\((.+?)\\)",
+        "replace": "// SECURITY: Avoid using eval\n// Consider using a safer alternative like JSON.parse() for JSON data\n// or Function() for dynamic code that doesn't access the global scope"
+      }
+    },
+    {
+      "id": "weak-crypto",
+      "regex": "(createHash|createCipher|createCipheriv)\\s*\\(\\s*['\"]md5|sha1['\"]",
+      "message": "Weak cryptographic algorithm (MD5/SHA1) detected",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(createHash|createCipher|createCipheriv)\\s*\\(\\s*['\"]md5|sha1['\"]",
+        "replace": "$1('sha256'"
+      }
+    },
+    {
+      "id": "jwt-no-expiration",
+      "regex": "jwt\\.sign\\s*\\([^,]+,[^,]+,\\s*\\{[^}]*?\\}\\s*\\)",
+      "message": "JWT without expiration time",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(jwt\\.sign\\s*\\([^,]+,[^,]+,)\\s*\\{([^}]*?)\\}(\\s*\\))",
+        "replace": "$1 {$2, expiresIn: '1h'}$3"
+      }
+    },
+    {
+      "id": "non-https-url",
+      "regex": "(fetch|axios\\.get|\\$\\.ajax)\\s*\\(\\s*['\"]http://(?!localhost|127\\.0\\.0\\.1)[^'\"]+['\"]",
+      "message": "Using non-HTTPS URL for external requests",
+      "severity": "high",
+      "fix": {
+        "type": "replace",
+        "find": "(['\"])http://([^'\"]+)(['\"])",
+        "replace": "$1https://$2$3"
+      }
+    },
+    {
+      "id": "command-injection",
+      "regex": "(exec|spawn|execFile)\\s*\\([^)]*?\\+|\\$\\{|\\{\\{|\\#\\{|\\%s",
+      "message": "Potential command injection vulnerability",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(exec|spawn|execFile)\\s*\\(['\"](.+?)['\"]\\s*\\+",
+        "replace": "$1(['$2', userArg]"
+      }
+    },
+    {
+      "id": "path-traversal",
+      "regex": "(fs\\.readFile|fs\\.readFileSync|fs\\.writeFile|fs\\.writeFileSync)\\s*\\([^)]*?\\.\\.\\/",
+      "message": "Path traversal vulnerability detected",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(\\.\\.\\/|\\.\\.\\\\\\\\\\/)",
+        "replace": "./"
+      }
+    },
+    {
+      "id": "hardcoded-secrets",
+      "regex": "(key|secret|password|token|apiKey|api_key)\\s*[=:]\\s*['\"][^'\"]{8,}['\"]",
+      "message": "Hardcoded secret/credentials found",
+      "severity": "critical",
+      "fix": {
+        "type": "replace",
+        "find": "(['\"])[^'\"]{8,}(['\"])",
+        "replace": "$1process.env.SECURE_CREDENTIAL$2"
+      }
+    }
+  ]
+}
