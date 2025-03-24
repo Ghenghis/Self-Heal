@@ -1,0 +1,30 @@
+.git
+.github
+.gitignore
+.gitattributes
+.npmignore
+.npmrc
+.travis.yml
+.eslintrc
+.eslintignore
+.editorconfig
+.vscode
+
+# Tests
+test
+tests
+__tests__
+coverage
+.nyc_output
+
+# Docs
+docs
+doc
+*.md
+!README.md
+
+# Examples
+examples
+
+# Development files
+.project-healer-issues.json
